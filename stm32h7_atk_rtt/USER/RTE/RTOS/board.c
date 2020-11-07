@@ -15,6 +15,8 @@
 #include "led.h"  
 #include "usart.h"
 #include "sdram.h"
+#include "ltdc.h" 
+#include "lcd.h" 
 
 #define _SCB_BASE       (0xE000E010UL)
 #define _SYSTICK_CTRL   (*(rt_uint32_t *)(_SCB_BASE + 0x0))
@@ -72,7 +74,7 @@ void rt_hw_board_init()
     /* System Tick Configuration */
     _SysTick_Config( SystemCoreClock / RT_TICK_PER_SECOND);
     SDRAM_Init();
-
+    
     /* Call components board initial (use INIT_BOARD_EXPORT()) */
 #ifdef RT_USING_COMPONENTS_INIT
     rt_components_board_init();

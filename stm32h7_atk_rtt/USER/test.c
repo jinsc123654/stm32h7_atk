@@ -3,10 +3,11 @@
 #include "usart.h" 
 #include "delay.h"
 #include "sdram.h"
+#include "ltdc.h" 
+#include "lcd.h" 
 
 static void dymem_thread_init(void);
 static void dymem_thread_entry(void);
-static u32 testsram[250000] __attribute__((at(0XC0000000)));//测试用数组
 
 u32 time = 0;
 int main(void)
@@ -16,9 +17,9 @@ int main(void)
     dymem_thread_init();
     
     LED_Init();                      //初始化与LED连接的硬件接口   
-    
-    testsram[1] = 0xf0f0;
-    
+
+    LCD_Init();                        //初始化LCD
+    LCD_ShowString(10,40,240,32,32,"STM32H7 RTTHREAD");     
     
     while(1)
     {
@@ -48,7 +49,10 @@ static void dymem_thread_init(void)
 
 int hello_world(void)
 {
-    rt_kprintf("%s\n", "hello world!");
+    rt_kprintf("%s\n", "hello world!"); delay_ms(1000); rt_kprintf("%s\n", "hello world!"); delay_ms(1000);
+    rt_enter_critical();
+
+    rt_exit_critical();
 
     return 0;
 }
@@ -58,7 +62,6 @@ static void dymem_thread_entry(void)
     while(1)
     {
 
-        rt_kprintf( "%X\r\n", testsram[1] );
         delay_ms(1000);
     }
 }
