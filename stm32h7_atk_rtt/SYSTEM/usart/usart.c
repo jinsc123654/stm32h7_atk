@@ -136,7 +136,7 @@ rt_size_t rt_ringbuffer_getchar(struct rt_ringbuffer *rb, rt_uint8_t *ch)
 
 
 /* 第二部分：finsh 移植对接部分 */
-#define UART_RX_BUF_LEN 16
+#define UART_RX_BUF_LEN 200
 rt_uint8_t uart_rx_buf[UART_RX_BUF_LEN] = {0};
 struct rt_ringbuffer  uart_rxcb;         /* 定义一个 ringbuffer cb */
 static struct rt_semaphore shell_rx_sem; /* 定义一个静态信号量 */
@@ -194,8 +194,7 @@ char rt_hw_console_getchar(void)
 void USART1_IRQHandler(void)
 {
     int ch = -1;
-    rt_base_t level;    
-    
+
     rt_interrupt_enter();          //在中断中一定要调用这对函数，进入中断
     
     if ( USART1->ISR&(1<<5) )
