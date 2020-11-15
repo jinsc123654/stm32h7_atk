@@ -2,13 +2,11 @@
 #include "led.h"  
 #include "usart.h" 
 #include "delay.h"
-#include "sdram.h"
 #include "ltdc.h" 
 #include "lcd.h" 
-#include <rtthread.h>
 
-struct rt_memheap sram_heap;
-struct rt_memheap sdram_heap;
+
+
 static void dymem_thread_init(void);
 static void dymem_thread_entry(void);
 
@@ -51,9 +49,10 @@ static void dymem_thread_init(void)
     char *p;
 int mem_1(void)
 {
-    int i,b = 1;
+    int i = 0;
+    u8 *p;
     delay_ms(1000);
-    p = rt_memheap_alloc(&sram_heap,10);
+    p = malloc_sdram(25000000);
     rt_kprintf( "P Init\r\n" );
     if( p != RT_NULL )
     {
@@ -63,11 +62,37 @@ int mem_1(void)
     {
         rt_kprintf( "P NO\r\n" );
     }
-//    for( i = 0; i<10; i++ )
-//    {
-//        p[i] = i + 'a';
-//    }
-    rt_kprintf( "malloc\r\n" );
+    for( i = 0; i <= 25000000; i++ )
+    {
+        p[i] = i;
+    }
+    for( i = 0; i <= 25000000; i += 254*10 )
+    {
+        rt_kprintf( "p[%d] = %d\r\n", i, p[i] ); ;
+    }
+    rt_memheap_free(  p );
+    rt_kprintf( "SDRAM ok\r\n" );
+    delay_ms(1000);
+    p = malloc_sram(300000);
+    rt_kprintf( "P Init\r\n" );
+    if( p != RT_NULL )
+    {
+        rt_kprintf( "P ok\r\n" );
+    }
+    else
+    {
+        rt_kprintf( "P NO\r\n" );
+    }
+    for( i = 0; i <= 300000; i++ )
+    {
+        p[i] = i;
+    }
+    for( i = 0; i <= 300000; i += 254 )
+    {
+        rt_kprintf( "p[%d] = %d\r\n", i, p[i] ); ;
+    }
+    free_sram( p );
+    rt_kprintf( "SRAM ok\r\n" );
 
     return 0;
 }
@@ -75,20 +100,8 @@ MSH_CMD_EXPORT(mem_1, printf mem_1 );
 
 int mem_2(void)
 {
-    int i,b = 1;
-
-    rt_memheap_free( p );
-    rt_kprintf( "free\r\n" );
-
-    return 0;
-}
-MSH_CMD_EXPORT(mem_2, printf mem_2 );
-
-static void dymem_thread_entry(void)
-{   
-    int i,b = 1;
-    delay_ms(1000);
-    p = rt_memheap_alloc(&sram_heap,10);
+    u8 *p;
+    p = malloc_sdram(25000000);
     rt_kprintf( "P Init\r\n" );
     if( p != RT_NULL )
     {
@@ -98,11 +111,14 @@ static void dymem_thread_entry(void)
     {
         rt_kprintf( "P NO\r\n" );
     }
-//    for( i = 0; i<10; i++ )
-//    {
-//        p[i] = i + 'a';
-//    }
-    rt_kprintf( "p?\r\n" );
+
+    return 0;
+}
+MSH_CMD_EXPORT(mem_2, printf mem_2 );
+
+static void dymem_thread_entry(void)
+{   
+
     while(1)
     {
 
