@@ -41,23 +41,31 @@ extern void SystemCoreClockUpdate(void);
 // Holds the system core clock, which is the system clock 
 // frequency supplied to the SysTick timer and the processor 
 // core clock.
+/****************************************malloc 定义部分***************************************************/
+struct rt_memheap sram_heap;
+struct rt_memheap sdram_heap;
 
-extern struct rt_memheap sram_heap;
-extern struct rt_memheap sdram_heap;
-#define RT_AXI_SRAM_BEGIN rt_heap2
-#define RT_AXI_SRAM_SIZE 1000
-static uint32_t rt_heap2[RT_AXI_SRAM_SIZE]; 
+#define RT_AXI_SRAM_BEGIN rt_heap2                                                  //sdram定义
+#define RT_AXI_SRAM_SIZE ( 29000 * 1024 / 4 )                                       //sdram大小
+//C01F4000
+static uint32_t rt_heap2[RT_AXI_SRAM_SIZE] __attribute__((at(SDRAM_FREE_ADDR)));    //sdram地址开始
 
+#if defined(RT_USING_USER_MAIN) && defined(RT_USING_HEAP)                           //sram允许
+#define RT_HEAP_SIZE ( 200 * 1024 / 4 )                                             //sram大小
+//static uint32_t rt_heap[RT_HEAP_SIZE] __attribute__((at(SDRAM_FREE_ADDR)));       //外部sdram
+static uint32_t rt_heap[RT_HEAP_SIZE];     // heap default size: 4K(1024 * 4)       //sram
+RT_WEAK void *rt_heap_begin_get(void)
+{
+    return rt_heap;
+}
 
-
-
-
-
-
+RT_WEAK void *rt_heap_end_get(void)
+{
+    return rt_heap + RT_HEAP_SIZE;
+}
+#endif
 
 extern uint32_t SystemCoreClock;
-
-
 static uint32_t _SysTick_Config(rt_uint32_t ticks)
 {
     if ((ticks - 1) > 0xFFFFFF)
@@ -73,21 +81,6 @@ static uint32_t _SysTick_Config(rt_uint32_t ticks)
     return 0;
 }
 
-#if defined(RT_USING_USER_MAIN) && defined(RT_USING_HEAP)
-#define RT_HEAP_SIZE ( 29500 * 1024 / 4 )
-//C01F4000
-static uint32_t rt_heap[RT_HEAP_SIZE] __attribute__((at(SDRAM_FREE_ADDR))); 
-//static uint32_t rt_heap[RT_HEAP_SIZE];     // heap default size: 4K(1024 * 4)
-RT_WEAK void *rt_heap_begin_get(void)
-{
-    return rt_heap;
-}
-
-RT_WEAK void *rt_heap_end_get(void)
-{
-    return rt_heap + RT_HEAP_SIZE;
-}
-#endif
 
 /**
  * This function will initial your board.
@@ -109,7 +102,7 @@ void rt_hw_board_init()
 #if defined(RT_USING_USER_MAIN) && defined(RT_USING_HEAP)
     rt_system_heap_init(rt_heap_begin_get(), rt_heap_end_get());
 #endif
-    rt_memheap_init(&sram_heap,"SRAM",&rt_heap2[0],1000);
+    rt_memheap_init(&sram_heap,"SDRAM",&rt_heap2[0],RT_AXI_SRAM_SIZE * 4);
 }
 
 void SysTick_Handler(void)

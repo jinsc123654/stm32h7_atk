@@ -10,6 +10,20 @@
 
 #if RT_THREAD_OS == 1
 #include <rtthread.h>
+extern struct rt_memheap sram_heap;
+extern struct rt_memheap sdram_heap;
+/****************************************mem重定义部分****************************************************/
+#define malloc_sdram( rt_memx ) ( rt_memheap_alloc( &sram_heap, rt_memx) )
+#define realloc_sdram( rt_memx ) ( rt_memheap_realloc( &sram_heap, rt_memx) )
+#define free_sdram( rt_memx ) ( rt_memheap_free( rt_memx ) )
+
+
+/****************************************heap重定义部分****************************************************/
+#define malloc_sram( rt_heapx ) ( rt_malloc( rt_heapx ) )
+#define realloc_sram( rt_heapx ) ( rt_realloc( rt_heapx ) )
+#define calloc_sram( rt_heapx ) ( rt_calloc( rt_heapx ) )
+#define free_sram( rt_heapx ) ( rt_free( rt_heapx) )
+
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////
