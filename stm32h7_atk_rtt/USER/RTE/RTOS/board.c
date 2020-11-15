@@ -18,6 +18,15 @@
 #include "ltdc.h" 
 #include "lcd.h" 
 
+#ifdef __LTDC_H
+#define SDRAM_FREE_ADDR ( 0XC0000000 + 1280 * 800 * 2 )
+//’º”√2.048M
+#else
+
+#define SDRAM_FREE_ADDR 0XC0000000 
+
+#endif
+
 #define _SCB_BASE       (0xE000E010UL)
 #define _SYSTICK_CTRL   (*(rt_uint32_t *)(_SCB_BASE + 0x0))
 #define _SYSTICK_LOAD   (*(rt_uint32_t *)(_SCB_BASE + 0x4))
@@ -32,7 +41,22 @@ extern void SystemCoreClockUpdate(void);
 // Holds the system core clock, which is the system clock 
 // frequency supplied to the SysTick timer and the processor 
 // core clock.
+
+extern struct rt_memheap sram_heap;
+extern struct rt_memheap sdram_heap;
+#define RT_AXI_SRAM_BEGIN rt_heap2
+#define RT_AXI_SRAM_SIZE 1000
+static uint32_t rt_heap2[RT_AXI_SRAM_SIZE]; 
+
+
+
+
+
+
+
+
 extern uint32_t SystemCoreClock;
+
 
 static uint32_t _SysTick_Config(rt_uint32_t ticks)
 {
@@ -50,8 +74,10 @@ static uint32_t _SysTick_Config(rt_uint32_t ticks)
 }
 
 #if defined(RT_USING_USER_MAIN) && defined(RT_USING_HEAP)
-#define RT_HEAP_SIZE ( 1024 / 4 * 200 )
-static uint32_t rt_heap[RT_HEAP_SIZE];     // heap default size: 4K(1024 * 4)
+#define RT_HEAP_SIZE ( 29500 * 1024 / 4 )
+//C01F4000
+static uint32_t rt_heap[RT_HEAP_SIZE] __attribute__((at(SDRAM_FREE_ADDR))); 
+//static uint32_t rt_heap[RT_HEAP_SIZE];     // heap default size: 4K(1024 * 4)
 RT_WEAK void *rt_heap_begin_get(void)
 {
     return rt_heap;
@@ -83,6 +109,7 @@ void rt_hw_board_init()
 #if defined(RT_USING_USER_MAIN) && defined(RT_USING_HEAP)
     rt_system_heap_init(rt_heap_begin_get(), rt_heap_end_get());
 #endif
+    rt_memheap_init(&sram_heap,"SRAM",&rt_heap2[0],1000);
 }
 
 void SysTick_Handler(void)

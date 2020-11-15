@@ -6,6 +6,8 @@
 //1,支持OS
 #define RT_THREAD_OS        1        //定义系统文件夹是否支持OS
 
+
+
 #if RT_THREAD_OS == 1
 #include <rtthread.h>
 #endif

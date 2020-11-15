@@ -3,7 +3,8 @@
 #ifndef __RTTHREAD_CFG_H__
 #define __RTTHREAD_CFG_H__
 #define RT_USING_HEAP
-
+#define RT_USING_MEMHEAP
+#define RT_USING_MEMHEAP_AS_HEAP 
 #if defined(__CC_ARM) || defined(__CLANG_ARM)
 #include "RTE_Components.h"
 
