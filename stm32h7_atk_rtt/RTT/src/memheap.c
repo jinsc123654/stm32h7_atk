@@ -602,7 +602,7 @@ void rt_system_heap_init(void *begin_addr, void *end_addr)
 {
     /* initialize a default heap in the system */
     rt_memheap_init(&_heap,
-                    "heap",
+                    "SRAM",
                     begin_addr,
                     (rt_uint32_t)end_addr - (rt_uint32_t)begin_addr);
 }
